@@ -62,6 +62,13 @@
       <!--<p><a href="index.html">Menyu sahifasiga o'tish</a></p>-->
     </div>
     <script>
+  const password = prompt("Admin parolni kiriting:");
+
+  if (password !== "1234") {
+    alert("Xato parol!");
+    window.location.href = "/";
+  }
+
       async function loadOrders() {
   const ordersList = document.getElementById("orders-list");
 
