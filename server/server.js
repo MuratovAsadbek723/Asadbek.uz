@@ -34,6 +34,8 @@ app.delete("/orders", (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(3000, () => {
-  console.log("Server 3000-portda ishlayapti");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server ${PORT} portda ishlayapti`);
 });
