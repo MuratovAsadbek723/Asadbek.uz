@@ -62,65 +62,72 @@
       <!--<p><a href="index.html">Menyu sahifasiga o'tish</a></p>-->
     </div>
     <script>
-      function loadOrders() {
-        const ordersList = document.getElementById("orders-list");
-        try {
-          const submittedOrders =
-            JSON.parse(localStorage.getItem("submittedOrders")) || [];
-          ordersList.innerHTML = "";
-          if (submittedOrders.length === 0) {
-            ordersList.innerHTML = "<li>Hozircha buyurtmalar yo‘q</li>";
-            return;
-          }
+      async function loadOrders() {
+  const ordersList = document.getElementById("orders-list");
 
-          // Taom nomiga qarab rasm yo‘llarini belgilash
-          const imageMap = {
-            Osh: "../osh.jpg",
-            Somsa: "../somsa.jpg",
-            Shashlik: "../shashlik.jpg",
-          };
+  try {
+    const response = await fetch("http://localhost:3000/orders");
+    const submittedOrders = await response.json();
 
-          submittedOrders.forEach((order) => {
-            const li = document.createElement("li");
-            let itemsHtml = order.items
-              .map((item) => {
-                const imgSrc = imageMap[item.item] || "images/default.jpg";
-                return `
-          <div style="display: flex; align-items: center; margin-bottom: 5px;">
-            <img src="${imgSrc}" alt="${item.item}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px; border-radius: 6px;">
+    ordersList.innerHTML = "";
+
+    if (submittedOrders.length === 0) {
+      ordersList.innerHTML = "<li>Hozircha buyurtmalar yo‘q</li>";
+      return;
+    }
+
+    const imageMap = {
+      Osh: "../osh.jpg",
+      Somsa: "../somsa.jpg",
+      Shashlik: "../shashlik.jpg",
+    };
+
+    submittedOrders.forEach((order) => {
+      const li = document.createElement("li");
+
+      let itemsHtml = order.items
+        .map((item) => {
+          const imgSrc = imageMap[item.item] || "../osh.jpg";
+
+          return `
+          <div style="display:flex;align-items:center;margin-bottom:5px;">
+            <img src="${imgSrc}" alt="${item.item}"
+              style="width:60px;height:60px;object-fit:cover;margin-right:10px;border-radius:6px;">
             <span>${item.item}: ${item.price} UZS</span>
           </div>
-        `;
-              })
-              .join("");
+          `;
+        })
+        .join("");
 
-            li.innerHTML = `
+      li.innerHTML = `
         <strong>Buyurtma ID: ${order.id}</strong><br>
         ${itemsHtml}
         <strong>Jami:</strong> ${order.total} UZS<br>
-        <strong>Vaqt:</strong> ${new Date(order.timestamp).toLocaleString(
-          "uz-UZ"
-        )}
+        <strong>Vaqt:</strong> ${new Date(order.timestamp).toLocaleString("uz-UZ")}
       `;
-            ordersList.appendChild(li);
-          });
-        } catch (error) {
-          ordersList.innerHTML =
-            "<li>Buyurtmalarni yuklashda xato: " + error.message + "</li>";
-        }
-      }
+
+      ordersList.appendChild(li);
+    });
+  } catch (error) {
+    ordersList.innerHTML =
+      "<li>Xato: " + error.message + "</li>";
+  }
+}
       // Buyurtmalarni tozalash
-      function clearOrders() {
-        if (confirm("Barcha buyurtmalarni ochirishni xohlaysizmi?")) {
-          try {
-            localStorage.removeItem("submittedOrders");
-            loadOrders();
-            alert("Buyurtmalar tozalandi!");
-          } catch (error) {
-            alert("Tozalashda xato: " + error.message);
-          }
-        }
-      }
+   async function clearOrders() {
+  if (confirm("Barcha buyurtmalarni ochirishni xohlaysizmi?")) {
+    try {
+      await fetch("http://localhost:3000/orders", {
+        method: "DELETE",
+      });
+
+      loadOrders();
+      alert("Buyurtmalar tozalandi!");
+    } catch (error) {
+      alert("Tozalashda xato: " + error.message);
+    }
+  }
+}
 
       // Sahifa yuklanganda buyurtmalarni yuklash
       window.onload = loadOrders;
