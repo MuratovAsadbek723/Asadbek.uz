@@ -156,40 +156,41 @@
       }
 
       // Buyurtma yuborish
-      function submitOrder() {
-        if (order.length === 0) {
-          alert("Buyurtma boʻsh!");
-          return;
-        }
-        // localStorage'dan mavjud buyurtmalarni olish
-        let submittedOrders =
-          JSON.parse(localStorage.getItem("submittedOrders")) || [];
-        const newOrder = {
-          id: submittedOrders.length + 1,
+     async function submitOrder() {
+  if (order.length === 0) {
+    alert("Buyurtma bo'sh!");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:3000/order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           items: order,
           total: total,
           timestamp: new Date().toISOString(),
-        };
-        submittedOrders.push(newOrder);
-        try {
-          localStorage.setItem(
-            "submittedOrders",
-            JSON.stringify(submittedOrders)
-          );
-          alert(
-            "Buyurtma yuborildi va saqlandi:\n" +
-              order
-                .map((item) => `${item.item}: ${item.price} UZS`)
-                .join("\n") +
-              `\nJami: ${total} UZS`
-          );
-          order = [];
-          total = 0;
-          updateOrderList();
-        } catch (error) {
-          alert("Saqlashda xato yuz berdi: " + error.message);
-        }
+        }),
       }
+    );
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert("Buyurtma yuborildi!");
+
+      order = [];
+      total = 0;
+      updateOrderList();
+    }
+  } catch (error) {
+    alert("Serverga ulanishda xato: " + error.message);
+  }
+}
 
       // Sahifa yuklanganda
       window.onload = function () {
